@@ -95,7 +95,7 @@ EDGE_HOSTS = [
 # 优选 API 地址配置 (支持逗号分隔多个，可配置在 GitHub Action Secret / Env 中)
 OPTIMAL_API = os.environ.get("OPTIMAL_API", "https://cf.090227.xyz/ct?ips=6&port=443")
 
-NODES_URL = os.environ.get("NODES_URL", ""https://paomian312.github.io/gate/nodes.txt")
+NODES_URL = os.environ.get("NODES_URL") or "https://paomian312.github.io/gate/nodes.txt"
 
 # ---------------------------------------------------------------------------
 # 日志
@@ -469,6 +469,13 @@ def write_outputs(data, edge_hosts):
 # main
 # ---------------------------------------------------------------------------
 def main():
+    if "你的域名" in WORKER_CHECK_URL or not WORKER_CHECK_URL.startswith("http"):
+        die(
+            "CHECK_WORKER 未配置 — 这还是占位符默认值, 所有检测请求都会失败。"
+            "按教程第五步: 仓库 Settings → Secrets and variables → Actions 新建 Secret 名 DOMAIN, "
+            "值为 https://xxx.workers.dev/check?sstp=vpn:vpn@ ; "
+            "再把 .github/workflows/vpngate.yml 里的 CHECK_WORKER 改成 ${{ secrets.DOMAIN }}"
+        )
     session = requests.Session()
     rows, source = fetch_vpngate()
     raw_count = len(rows)
